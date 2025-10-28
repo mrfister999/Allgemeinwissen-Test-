@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Allgemeinwissen Einstellungstest</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f9ff;
+    color: #1e3a8a;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 800px;
+    margin: 50px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 15px rgba(30,58,138,0.2);
+  }
+  h1, h2 {
+    text-align: center;
+    color: #1e40af;
+  }
+  button {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: 0.3s;
+  }
+  button:hover {
+    background-color: #1d4ed8;
+  }
+  .hidden {
+    display: none;
+  }
+  .question {
+    margin-bottom: 25px;
+  }
+  label {
+    display: block;
+    margin: 8px 0;
+    background: #eff6ff;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  input[type="radio"] {
+    margin-right: 10px;
+  }
+  #timer {
+    text-align: right;
+    font-weight: bold;
+    color: #1d4ed8;
+  }
+  .correct {
+    color: green;
+    font-weight: bold;
+  }
+  .wrong {
+    color: red;
+    font-weight: bold;
+  }
+  .result-item {
+    margin-bottom: 20px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="start-screen">
+  <h1>Allgemeinwissen Einstellungstest</h1>
+  <p>Willkommen zum Allgemeinwissen-Test!<br><br>
+  Du hast <b>15 Minuten</b> Zeit, um <b>35 Fragen</b> zu beantworten.<br>
+  Am Ende siehst du dein Ergebnis in Prozent und welche Fragen du falsch hattest.<br><br>
+  Viel Erfolg!</p>
+  <div style="text-align:center;">
+    <button onclick="startQuiz()">Test starten</button>
+  </div>
+</div>
+
+<div class="container hidden" id="quiz-screen">
+  <div id="timer">Zeit: 15:00</div>
+  <h2>Beantworte die Fragen</h2>
+  <form id="quiz-form"></form>
+  <div style="text-align:center;">
+    <button type="button" onclick="submitQuiz()">Auswertung anzeigen</button>
+  </div>
+</div>
+
+<div class="container hidden" id="result-screen">
+  <h2>Auswertung</h2>
+  <p id="score"></p>
+  <div id="wrong-answers"></div>
+  <div style="text-align:center;">
+    <button onclick="location.reload()">Neu starten</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {q:"Welche Wirtschaftsordnung gilt in Deutschland?",a:["Zentralverwaltungswirtschaft","Planwirtschaft","Freie Marktwirtschaft","Soziale Marktwirtschaft"],c:3},
+  {q:"Wer bestimmt in Deutschland die politischen Richtlinien?",a:["Bundespräsident","Bundestag","Bundesrat","Bundeskanzler"],c:3},
+  {q:"Wer verabschiedet den Bundeshaushalt?",a:["Bundesversammlung","Bundestag","Bundesrat","Bundesminister"],c:1},
+  {q:"Was beschreibt das Bruttoinlandsprodukt?",a:["Summe aller Leistungen pro Jahr","Differenz zum Vorjahr","Weltwirtschaft insgesamt","Nur Exporte"],c:0},
+  {q:"Wessen Interessen werden in der Kommunalpolitik vertreten?",a:["Bund","Bundesländer","Europäische Union","Gemeinden und Landkreise"],c:3},
+  {q:"Wann ist der Tag der Deutschen Einheit?",a:["3. Oktober 1989","11. September 1990","3. Oktober 1990","11. September 1989"],c:2},
+  {q:"Wann fiel die Berliner Mauer?",a:["9. November 1989","9. November 1990","9. Oktober 1989","9. Oktober 1990"],c:0},
+  {q:"Wann war der Erste Weltkrieg?",a:["1913–1919","1914–1918","1939–1945","1940–1945"],c:1},
+  {q:"Wer gilt als Begründer der Evolutionstheorie?",a:["Gregor Mendel","Jean-Baptiste de Lamarck","Francis Crick","Charles Darwin"],c:3},
+  {q:"Was bedeutet Inflation?",a:["Preisstabilität","Anstieg des Preisniveaus","Sinkende Preise","Geldaufwertung"],c:1},
+  {q:"Was ist ein Boom?",a:["Abschwächung","Rückgang","Hochkonjunktur","Abschwung"],c:2},
+  {q:"Wie lange braucht Licht von der Sonne zur Erde?",a:["8 Minuten 19 Sekunden","13 Minuten 24 Sekunden","1 Stunde 2 Minuten","1 Stunde 8 Minuten"],c:0},
+  {q:"Wer ist für die Geldpolitik zuständig?",a:["Bundestag","Bundesbank","EZB","Finanzministerium"],c:2},
+  {q:"Welcher Artikel garantiert Meinungsfreiheit?",a:["Artikel 1","Artikel 5","Artikel 20","Artikel 10"],c:1},
+  {q:"Was ist eine Rezession?",a:["Wachstum","Stagnation","Abschwung","Hochkonjunktur"],c:2},
+  {q:"Wer wählt den Bundeskanzler?",a:["Bundesrat","Bundestag","Bundespräsident","Bundesversammlung"],c:1},
+  {q:"Welches Land war im Ersten Weltkrieg Mittelmacht?",a:["Großbritannien","Frankreich","Österreich-Ungarn","Russland"],c:2},
+  {q:"Was bedeutet Demokratie?",a:["Herrschaft des Königs","Herrschaft des Volkes","Herrschaft des Militärs","Herrschaft einer Partei"],c:1},
+  {q:"Was ist die Hauptaufgabe des Bundestags?",a:["Gesetze verabschieden","Bundeswehr kontrollieren","Richter ernennen","Länder verwalten"],c:0},
+  {q:"Welcher Stoff ist kein fossiler Brennstoff?",a:["Erdöl","Kohle","Erdgas","Uran"],c:3},
+  {q:"Wer ist für Bundesgesetze zuständig?",a:["Bundesrat","Bundestag","Bundespräsident","Bundesverfassungsgericht"],c:1},
+  {q:"Was versteht man unter Globalisierung?",a:["Mehr Grenzen","Weniger Handel","Weltweite Verflechtungen","Reisebeschränkungen"],c:2},
+  {q:"Welches Vitamin entsteht durch Sonnenlicht?",a:["Vitamin A","Vitamin B12","Vitamin C","Vitamin D"],c:3},
+  {q:"Wer war erster Bundeskanzler Deutschlands?",a:["Willy Brandt","Konrad Adenauer","Helmut Kohl","Ludwig Erhard"],c:1},
+  {q:"Ab welchem Alter sind deutsche Staatsbürger bei der Bundestagswahl wahlberechtigt?",a:["16 Jahre","21 Jahre","Es gibt keine Altersbeschränkung","18 Jahre"],c:3},
+  // 10 neue Fragen:
+  {q:"Wie viele Bundesländer hat Deutschland?",a:["14","15","16","17"],c:2},
+  {q:"Wie viele Kontinente gibt es auf der Erde?",a:["5","6","7","8"],c:2},
+  {q:"Wie viele Planeten hat unser Sonnensystem?",a:["7","8","9","10"],c:1},
+  {q:"Was ist das chemische Symbol für Gold?",a:["Ag","Au","Gd","Go"],c:1},
+  {q:"Wie heißt der längste Fluss der Welt?",a:["Nil","Amazonas","Mississippi","Donau"],c:1},
+  {q:"Wie viele Tage hat ein Schaltjahr?",a:["364","365","366","367"],c:2},
+  {q:"Welche Stadt ist die Hauptstadt von Kanada?",a:["Toronto","Vancouver","Ottawa","Montreal"],c:2},
+  {q:"Wie viele Sterne hat die Europaflagge?",a:["12","6","27","28"],c:0},
+  {q:"Wer schrieb die Relativitätstheorie?",a:["Isaac Newton","Albert Einstein","Stephen Hawking","Galileo Galilei"],c:1},
+  {q:"Welches Element hat das chemische Symbol O?",a:["Osmium","Sauerstoff","Oxid","Ozon"],c:1}
+];
+
+let shuffledQuestions;
+let timer;
+let timeLeft = 15 * 60;
+
+function startQuiz() {
+  shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+  document.getElementById("start-screen").classList.add("hidden");
+  document.getElementById("quiz-screen").classList.remove("hidden");
+  renderQuestions();
+  startTimer();
+}
+
+function renderQuestions() {
+  const quizForm = document.getElementById("quiz-form");
+  quizForm.innerHTML = "";
+  shuffledQuestions.forEach((q, i) => {
+    const div = document.createElement("div");
+    div.classList.add("question");
+    div.innerHTML = `<p><b>${i + 1}. ${q.q}</b></p>` + 
+      q.a.map((ans, idx) =>
+        `<label><input type="radio" name="q${i}" value="${idx}">${ans}</label>`
+      ).join("");
+    quizForm.appendChild(div);
+  });
+}
+
+function startTimer() {
+  updateTimer();
+  timer = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) submitQuiz();
+  }, 1000);
+}
+
+function updateTimer() {
+  const min = Math.floor(timeLeft / 60);
+  const sec = timeLeft % 60;
+  document.getElementById("timer").textContent = 
+    `Zeit: ${min}:${sec < 10 ? '0'+sec : sec}`;
+}
+
+function submitQuiz() {
+  clearInterval(timer);
+  document.getElementById("quiz-screen").classList.add("hidden");
+  document.getElementById("result-screen").classList.remove("hidden");
+
+  const form = document.getElementById("quiz-form");
+  let correct = 0;
+  let wrongAnswers = "";
+  let unanswered = 0;
+
+  shuffledQuestions.forEach((q, i) => {
+    const selected = form.querySelector(`input[name="q${i}"]:checked`);
+    const answer = selected ? parseInt(selected.value) : undefined;
+
+    if (answer === undefined) {
+      unanswered++;
+    }
+
+    if (answer !== undefined && answer === q.c) {
+      correct++;
+    } else if (answer !== undefined && answer !== q.c) {
+      wrongAnswers += `
+        <div class="result-item">
+          <p><b>${i + 1}. ${q.q}</b></p>
+          <p class="wrong">Deine Antwort: ${q.a[answer]}</p>
+          <p class="correct">Richtig: ${q.a[q.c]}</p>
+        </div>`;
+    } else if (answer === undefined) {
+      wrongAnswers += `
+        <div class="result-item">
+          <p><b>${i + 1}. ${q.q}</b></p>
+          <p class="wrong">Keine Antwort gegeben</p>
+          <p class="correct">Richtig: ${q.a[q.c]}</p>
+        </div>`;
+    }
+  });
+
+  const percent = Math.round((correct / shuffledQuestions.length) * 100);
+
+  document.getElementById("score").innerHTML = `
+    Du hast <b>${correct}</b> von <b>${shuffledQuestions.length}</b> Fragen richtig beantwortet (${percent}%).<br>
+    <b>${unanswered}</b> Fragen wurden nicht beantwortet.
+  `;
+
+  document.getElementById("wrong-answers").innerHTML = wrongAnswers
+    ? `<h3>Falsche oder unbeantwortete Fragen:</h3>${wrongAnswers}`
+    : "<p class='correct'>Perfekt! Alle Antworten waren richtig! 🎉</p>";
+}
+</script>
+
+</body>
+</html>
